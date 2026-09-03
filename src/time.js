@@ -1,11 +1,28 @@
 import { emptyPoint, POINT_IDS } from "./types.js";
 
-export function liveMs(point, team, now) {
-  const stored = team === "red" ? point.red_total_time : point.blue_total_time;
-  if (point.status !== team) return Math.max(0, stored);
-  const started = Date.parse(point.last_change_timestamp);
-  if (Number.isNaN(started)) return Math.max(0, stored);
-  return Math.max(0, stored) + Math.max(0, now - started);
+export function parseTimestamp(value) {
+  if (value instanceof Date) {
+    const ms = value.getTime();
+    return Number.isNaN(ms) ? Date.now() : ms;
+  }
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  const raw = String(value ?? "").trim();
+  if (!raw) return Date.now();
+  const direct = Date.parse(raw);
+  if (!Number.isNaN(direct)) return direct;
+  const iso = Date.parse(raw.replace(" ", "T"));
+  if (!Number.isNaN(iso)) return iso;
+  return Date.now();
+}
+
+export function liveMs(point, team, now = Date.now()) {
+  const stored = Math.max(
+    0,
+    Number(team === "red" ? point.red_total_time : point.blue_total_time) || 0,
+  );
+  if (point.status !== team) return stored;
+  const started = parseTimestamp(point.last_change_timestamp);
+  return stored + Math.max(0, now - started);
 }
 
 export function toLivePoint(point, now = Date.now()) {
