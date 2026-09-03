@@ -8,4 +8,4 @@ export async function createGameApi() {
   return createDemoApi();
 }
 
-export { testSupabase } from "./supabase.js";
+export { testSupabase, normalizeConfig } from "./supabase.js";

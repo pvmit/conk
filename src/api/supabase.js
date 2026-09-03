@@ -1,7 +1,5 @@
 import { emptyPoints, POINT_IDS } from "../types.js";
 
-const SUPABASE_ESM = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm";
-
 function asNumber(value) {
   const n = typeof value === "number" ? value : Number(value);
   return Number.isFinite(n) ? n : 0;
@@ -22,59 +20,148 @@ function asPoint(row) {
   };
 }
 
-async function fetchPoints(client) {
-  const { data, error } = await client
-    .from("points")
-    .select("point_id, status, red_total_time, blue_total_time, last_change_timestamp, updated_at")
-    .order("point_id");
-  if (error) throw error;
-  const rows = (data ?? []).map(asPoint);
-  return POINT_IDS.map((id) => rows.find((p) => p.point_id === id) ?? emptyPoints().find((p) => p.point_id === id));
+export function normalizeConfig(raw) {
+  const supabaseUrl = String(raw.supabaseUrl ?? "")
+    .trim()
+    .replace(/^["']|["']$/g, "")
+    .replace(/\/+$/, "");
+  const supabaseAnonKey = String(raw.supabaseAnonKey ?? "").replace(/\s+/g, "");
+  return { supabaseUrl, supabaseAnonKey };
 }
 
-async function callPointFn(client, fn, args) {
-  const { data, error } = await client.rpc(fn, args);
-  if (error) throw error;
+export function explainConfig(config) {
+  const { supabaseUrl, supabaseAnonKey } = config;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return "Wklej URL projektu i klucz anon / publishable.";
+  }
+  if (/github\.com|github\.io/i.test(supabaseUrl)) {
+    return "To jest adres GitHuba. Potrzebny jest Project URL z Supabase, np. https://xxxx.supabase.co";
+  }
+  if (/^postgres(ql)?:\/\//i.test(supabaseUrl)) {
+    return "Wkleiłeś connection string do Postgresa. Potrzebny jest Project URL: https://xxxx.supabase.co";
+  }
+  let parsed;
+  try {
+    parsed = new URL(supabaseUrl);
+  } catch {
+    return "URL wygląda niepoprawnie. Ma być: https://xxxx.supabase.co";
+  }
+  if (parsed.protocol !== "https:") {
+    return "URL musi zaczynać się od https://";
+  }
+  if (parsed.hostname === "supabase.com" || parsed.hostname.endsWith(".supabase.com")) {
+    return "To adres panelu, nie projektu. W Settings → API skopiuj Project URL (kończy się na .supabase.co).";
+  }
+  if (supabaseAnonKey.startsWith("http")) {
+    return "W pole klucza wkleiłeś link. Wklej klucz anon / publishable (eyJ... albo sb_publishable_...).";
+  }
+  return null;
+}
+
+function headers(config, extra = {}) {
+  return {
+    apikey: config.supabaseAnonKey,
+    Authorization: `Bearer ${config.supabaseAnonKey}`,
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    ...extra,
+  };
+}
+
+async function rest(config, path, options = {}) {
+  let res;
+  try {
+    res = await fetch(`${config.supabaseUrl}${path}`, {
+      ...options,
+      headers: headers(config, options.headers),
+    });
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "brak sieci";
+    throw new Error(
+      `Nie da się dostać do ${config.supabaseUrl} (${reason}). Sprawdź Project URL i czy projekt w Supabase nie jest pauzowany.`,
+    );
+  }
+
+  const text = await res.text();
+  let data = null;
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = text;
+    }
+  }
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.message || data.error_description || data.error || data.hint)) ||
+      text ||
+      res.statusText;
+    if (res.status === 401 || res.status === 403) {
+      throw new Error("Klucz odrzucony. Skopiuj ponownie anon public / publishable z Settings → API.");
+    }
+    if (res.status === 404) {
+      throw new Error(
+        "Nie znaleziono tabeli points. W SQL Editorze musi przejść cały skrypt (Success), nie sam link.",
+      );
+    }
+    throw new Error(`${res.status}: ${msg}`);
+  }
+
+  return data;
+}
+
+async function fetchPoints(config) {
+  const data = await rest(
+    config,
+    "/rest/v1/points?select=point_id,status,red_total_time,blue_total_time,last_change_timestamp,updated_at&order=point_id",
+  );
+  const rows = Array.isArray(data) ? data.map(asPoint) : [];
+  return POINT_IDS.map(
+    (id) => rows.find((p) => p.point_id === id) ?? emptyPoints().find((p) => p.point_id === id),
+  );
+}
+
+async function callRpc(config, fn, args = {}) {
+  const data = await rest(config, `/rest/v1/rpc/${fn}`, {
+    method: "POST",
+    body: JSON.stringify(args),
+  });
+  if (data == null) return data;
   const row = Array.isArray(data) ? data[0] : data;
-  return asPoint(row);
+  return row && row.point_id ? asPoint(row) : row;
 }
 
-async function loadClient(config) {
-  const mod = await import(SUPABASE_ESM);
-  return mod.createClient(config.supabaseUrl, config.supabaseAnonKey);
+export async function testSupabase(raw) {
+  const config = normalizeConfig(raw);
+  const problem = explainConfig(config);
+  if (problem) throw new Error(problem);
+  const rows = await rest(config, "/rest/v1/points?select=point_id&limit=3");
+  if (!Array.isArray(rows) || rows.length === 0) {
+    throw new Error("Połączono, ale tabela points jest pusta. Uruchom jeszcze raz cały skrypt SQL.");
+  }
 }
 
-export async function testSupabase(config) {
-  const client = await loadClient(config);
-  const { error } = await client.from("points").select("point_id").limit(1);
-  if (error) throw error;
-}
-
-export async function createSupabaseApi(config) {
-  const client = await loadClient(config);
+export async function createSupabaseApi(raw) {
+  const config = normalizeConfig(raw);
   return {
     mode: "supabase",
-    loadPoints: () => fetchPoints(client),
+    loadPoints: () => fetchPoints(config),
     async setStatus(id, status) {
-      return callPointFn(client, "set_point_status", { p_id: id, new_status: status });
+      return callRpc(config, "set_point_status", { p_id: id, new_status: status });
     },
     async resetPoint(id) {
-      return callPointFn(client, "reset_point", { p_id: id });
+      return callRpc(config, "reset_point", { p_id: id });
     },
     async resetGame() {
-      const { error } = await client.rpc("reset_game");
-      if (error) throw error;
+      await callRpc(config, "reset_game");
     },
     subscribe(onChange) {
-      const channel = client
-        .channel("points-live")
-        .on("postgres_changes", { event: "*", schema: "public", table: "points" }, () => {
-          void fetchPoints(client).then(onChange).catch(() => undefined);
-        })
-        .subscribe();
-      return () => {
-        void client.removeChannel(channel);
+      const tick = () => {
+        void fetchPoints(config).then(onChange).catch(() => undefined);
       };
+      const timer = window.setInterval(tick, 1000);
+      return () => window.clearInterval(timer);
     },
   };
 }

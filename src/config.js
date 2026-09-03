@@ -5,12 +5,12 @@ export function getConfig() {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (parsed.supabaseUrl && parsed.supabaseAnonKey) {
-      return {
-        supabaseUrl: parsed.supabaseUrl.trim(),
-        supabaseAnonKey: parsed.supabaseAnonKey.trim(),
-      };
-    }
+        if (parsed.supabaseUrl && parsed.supabaseAnonKey) {
+          return {
+            supabaseUrl: String(parsed.supabaseUrl).trim().replace(/\/+$/, ""),
+            supabaseAnonKey: String(parsed.supabaseAnonKey).replace(/\s+/g, ""),
+          };
+        }
   } catch {
     return null;
   }
