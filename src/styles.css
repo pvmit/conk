@@ -193,6 +193,9 @@ a {
   background: #f5a623;
   color: #111;
   border: none;
+  display: grid;
+  place-items: center;
+  text-decoration: none;
 }
 
 .banner {
@@ -292,7 +295,9 @@ a {
   line-height: 1;
 }
 
-.lead-line {
+.board-top {
+  justify-content: center;
+}
   margin: 4px 0 0;
   letter-spacing: 0.12em;
   font-size: clamp(1rem, 2.6vw, 1.35rem);

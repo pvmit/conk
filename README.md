@@ -82,9 +82,9 @@ Repozytorium jest gotowe do wrzucenia na GitHub. W ustawieniach repo:
 
 Potem każdy telefon otwiera ten sam adres. Gracze mogą od razu wejść na **WYNIKI**:
 
-`https://pvmit.github.io/conk/#/wyniki`
+`https://pvmit.github.io/conk/wyniki.html`
 
-To publiczna tablica na żywo (sumy, paski, status A/B/C) — bez resetu i bez sterowania punktami.
+To osobna tablica na żywo — bez menu, resetu i panelu administratora.
 
 Na hostingu publicznym **nie wklejaj service role key**. Anon key jest kluczem przeglądarkowym — kto zna URL aplikacji i klucz, może zmieniać stan gry. Do gry harcerskiej to zwykle wystarcza.
 

@@ -2,11 +2,11 @@ import { createGameApi } from "./api/index.js";
 import { consumeJoinLink, loadBundledConfig } from "./config.js";
 import { clear } from "./dom.js";
 import { isPointId } from "./types.js";
-import { renderHome } from "./screens/home.js?v=wyniki2";
-import { renderPoint } from "./screens/point.js?v=wyniki2";
-import { renderAdmin } from "./screens/admin.js?v=wyniki2";
-import { renderSetup } from "./screens/setup.js?v=wyniki2";
-import { renderResults } from "./screens/results.js?v=wyniki2";
+import { renderHome } from "./screens/home.js?v=wyniki3";
+import { renderPoint } from "./screens/point.js?v=wyniki3";
+import { renderAdmin } from "./screens/admin.js?v=wyniki3";
+import { renderSetup } from "./screens/setup.js?v=wyniki3";
+import { renderResults } from "./screens/results.js?v=wyniki3";
 
 const app = document.querySelector("#app");
 if (!app) throw new Error("Brak #app");

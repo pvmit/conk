@@ -32,10 +32,7 @@ export function renderResults(root, api) {
 
   root.append(
     el("section", { class: "screen admin board" }, [
-      el("div", { class: "topbar" }, [
-        el("button", { class: "ghost", "data-go": "#/" }, ["← Menu"]),
-        connectionBadge(api.mode),
-      ]),
+      el("div", { class: "topbar board-top" }, [connectionBadge(api.mode)]),
       el("h1", { class: "admin-title" }, ["CONQUEST"]),
       el("div", { class: "totals" }, [
         el("h2", {}, ["WYNIK NA ŻYWO"]),
@@ -85,12 +82,6 @@ export function renderResults(root, api) {
     }
   });
 
-  const onClick = (event) => {
-    const target = event.target.closest("[data-go]");
-    if (!target) return;
-    location.hash = target.dataset.go;
-  };
-  root.addEventListener("click", onClick);
   let releaseWake = () => undefined;
   void requestWakeLock().then((release) => {
     releaseWake = release;
@@ -98,7 +89,6 @@ export function renderResults(root, api) {
 
   return () => {
     stopWatch();
-    root.removeEventListener("click", onClick);
     releaseWake();
   };
 }
