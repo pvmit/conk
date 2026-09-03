@@ -298,10 +298,16 @@ a {
 .board-top {
   justify-content: center;
 }
+
+.lead-line {
   margin: 4px 0 0;
   letter-spacing: 0.12em;
   font-size: clamp(1rem, 2.6vw, 1.35rem);
   font-weight: 700;
+}
+
+.total-row.red {
+  color: var(--red);
 }
 
 .total-row.ahead {
