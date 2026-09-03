@@ -408,6 +408,24 @@ a {
   color: var(--amber);
 }
 
+.card-time.running::after,
+.total-row.running::after {
+  content: " ▶";
+  font-size: 0.45em;
+  vertical-align: middle;
+}
+
+@keyframes clock-live {
+  50% {
+    opacity: 0.72;
+  }
+}
+
+.total-row.running,
+.card-time.running {
+  animation: clock-live 1s step-end infinite;
+}
+
 .admin-actions {
   display: flex;
   justify-content: center;
@@ -474,6 +492,22 @@ a {
   font-size: clamp(2.8rem, 12vw, 6.5rem);
   font-weight: 800;
   line-height: 1;
+}
+
+.team-panel .run-flag {
+  display: none;
+  margin-top: 8px;
+  letter-spacing: 0.22em;
+  font-size: clamp(0.85rem, 2.4vw, 1.15rem);
+  font-weight: 800;
+}
+
+.team-panel.active .run-flag:not([hidden]) {
+  display: block;
+}
+
+.team-panel.active .clock.running {
+  animation: clock-live 1s step-end infinite;
 }
 
 .team-panel.red {

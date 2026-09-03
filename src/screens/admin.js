@@ -59,6 +59,14 @@ export function renderAdmin(root, api) {
   const stopWatch = watchGame(api, (live) => {
     redTotal.textContent = `🔴 ${formatHMS(live.totals.red)}`;
     blueTotal.textContent = `🔵 ${formatHMS(live.totals.blue)}`;
+    redTotal.classList.toggle(
+      "running",
+      live.points.some((p) => p.status === "red"),
+    );
+    blueTotal.classList.toggle(
+      "running",
+      live.points.some((p) => p.status === "blue"),
+    );
     redRankTime.textContent = formatHMS(live.totals.red);
     blueRankTime.textContent = formatHMS(live.totals.blue);
     const pct = rankingPercents(live.totals.red, live.totals.blue);
@@ -105,6 +113,8 @@ function updateCard(cardRefs, point) {
   if (!cardRefs) return;
   cardRefs.red.textContent = `🔴 ${formatHMS(point.redLive)}`;
   cardRefs.blue.textContent = `🔵 ${formatHMS(point.blueLive)}`;
+  cardRefs.red.classList.toggle("running", point.status === "red");
+  cardRefs.blue.classList.toggle("running", point.status === "blue");
   cardRefs.status.textContent = statusLabel(point.status);
   cardRefs.status.className = `status-chip ${point.status}`;
 }

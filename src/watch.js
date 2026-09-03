@@ -21,7 +21,7 @@ export function watchGame(api, onUpdate) {
     emit();
   });
 
-  const timer = window.setInterval(emit, 250);
+  const timer = window.setInterval(emit, 100);
   return () => {
     window.clearInterval(timer);
     unsub();

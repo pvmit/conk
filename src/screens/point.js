@@ -1,4 +1,4 @@
-import { formatHMS, statusLabel } from "../time.js";
+import { applyStatusChange, formatHMS, statusLabel, toLivePoint } from "../time.js";
 import { connectionBadge, el } from "../dom.js";
 import { watchGame } from "../watch.js";
 import { requestWakeLock } from "../wake-lock.js";
@@ -8,13 +8,17 @@ export function renderPoint(root, api, id) {
   const statusChip = el("div", { class: "status-chip", role: "status" }, ["○ WOLNY"]);
   const redClock = el("div", { class: "clock" }, ["00:00:00"]);
   const blueClock = el("div", { class: "clock" }, ["00:00:00"]);
+  const redRun = el("div", { class: "run-flag" }, ["▶ CZAS LECI"]);
+  const blueRun = el("div", { class: "run-flag" }, ["▶ CZAS LECI"]);
   const redBtn = el("button", { class: "team-panel red", "data-status": "red" }, [
     el("div", { class: "who" }, ["🔴 CZERWONI"]),
     redClock,
+    redRun,
   ]);
   const blueBtn = el("button", { class: "team-panel blue", "data-status": "blue" }, [
     el("div", { class: "who" }, ["🔵 NIEBIESCY"]),
     blueClock,
+    blueRun,
   ]);
   const error = el("div", { class: "error" }, [""]);
 
@@ -36,16 +40,39 @@ export function renderPoint(root, api, id) {
     ]),
   );
 
+  let snapshot = null;
+  let pending = null;
   let busy = false;
-  const stopWatch = watchGame(api, (live) => {
-    const point = live.points.find((p) => p.point_id === id);
+
+  const paint = (point) => {
     if (!point) return;
-    redClock.textContent = formatHMS(point.redLive);
-    blueClock.textContent = formatHMS(point.blueLive);
-    statusChip.textContent = statusLabel(point.status);
-    statusChip.className = `status-chip ${point.status}`;
-    redBtn.classList.toggle("active", point.status === "red");
-    blueBtn.classList.toggle("active", point.status === "blue");
+    const live = toLivePoint(point);
+    snapshot = live;
+    redClock.textContent = formatHMS(live.redLive);
+    blueClock.textContent = formatHMS(live.blueLive);
+    redClock.classList.toggle("running", live.status === "red");
+    blueClock.classList.toggle("running", live.status === "blue");
+    redBtn.classList.toggle("active", live.status === "red");
+    blueBtn.classList.toggle("active", live.status === "blue");
+    redRun.hidden = live.status !== "red";
+    blueRun.hidden = live.status !== "blue";
+    statusChip.textContent = statusLabel(live.status);
+    statusChip.className = `status-chip ${live.status}`;
+  };
+
+  const stopWatch = watchGame(api, (game) => {
+    const point = game.points.find((p) => p.point_id === id);
+    if (
+      pending &&
+      point &&
+      point.status !== pending.status &&
+      Date.now() - pending.at < 5000
+    ) {
+      paint(snapshot);
+      return;
+    }
+    pending = null;
+    paint(point);
   });
 
   const onClick = async (event) => {
@@ -65,7 +92,12 @@ export function renderPoint(root, api, id) {
         return;
       }
       const status = target.dataset.status;
-      if (status) await api.setStatus(id, status);
+      if (!status) return;
+      if (snapshot) {
+        pending = { status, at: Date.now() };
+        paint(applyStatusChange(snapshot, status));
+      }
+      await api.setStatus(id, status);
     } catch (err) {
       error.textContent = err instanceof Error ? err.message : "Nie udało się zapisać zmiany.";
     } finally {
