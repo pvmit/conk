@@ -132,6 +132,40 @@ async function callRpc(config, fn, args = {}) {
   return row && row.point_id ? asPoint(row) : row;
 }
 
+function resetPayload() {
+  const iso = new Date().toISOString();
+  return {
+    status: "neutral",
+    red_total_time: 0,
+    blue_total_time: 0,
+    last_change_timestamp: iso,
+    updated_at: iso,
+  };
+}
+
+async function patchPoint(config, id, payload) {
+  const data = await rest(
+    config,
+    `/rest/v1/points?point_id=eq.${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify(payload),
+    },
+  );
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) throw new Error(`Punkt ${id} nie istnieje w bazie.`);
+  return asPoint(row);
+}
+
+async function resetPointRow(config, id) {
+  try {
+    return await callRpc(config, "reset_point", { p_id: id });
+  } catch {
+    return patchPoint(config, id, resetPayload());
+  }
+}
+
 export async function testSupabase(raw) {
   const config = normalizeConfig(raw);
   const problem = explainConfig(config);
@@ -151,10 +185,10 @@ export async function createSupabaseApi(raw) {
       return callRpc(config, "set_point_status", { p_id: id, new_status: status });
     },
     async resetPoint(id) {
-      return callRpc(config, "reset_point", { p_id: id });
+      return resetPointRow(config, id);
     },
     async resetGame() {
-      await callRpc(config, "reset_game");
+      await Promise.all(POINT_IDS.map((id) => resetPointRow(config, id)));
     },
     subscribe(onChange) {
       const tick = () => {

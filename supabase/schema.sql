@@ -128,7 +128,8 @@ begin
     red_total_time = 0,
     blue_total_time = 0,
     last_change_timestamp = now(),
-    updated_at = now();
+    updated_at = now()
+  where point_id in ('A', 'B', 'C');
 
   insert into public.point_events (point_id, from_status, to_status, red_total_time, blue_total_time)
   select point_id, 'reset_game', 'neutral', 0, 0 from public.points;
