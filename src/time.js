@@ -6,13 +6,15 @@ export function parseTimestamp(value) {
     return Number.isNaN(ms) ? Date.now() : ms;
   }
   if (typeof value === "number" && Number.isFinite(value)) return value;
-  const raw = String(value ?? "").trim();
+  let raw = String(value ?? "").trim();
   if (!raw) return Date.now();
+  raw = raw.replace(" ", "T");
+  raw = raw.replace(/([+-]\d{2})$/, "$1:00");
+  raw = raw.replace(/([+-]\d{2})(\d{2})$/, "$1:$2");
   const direct = Date.parse(raw);
   if (!Number.isNaN(direct)) return direct;
-  const iso = Date.parse(raw.replace(" ", "T"));
-  if (!Number.isNaN(iso)) return iso;
-  return Date.now();
+  const iso = Date.parse(`${raw}Z`);
+  return Number.isNaN(iso) ? Date.now() : iso;
 }
 
 export function liveMs(point, team, now = Date.now()) {

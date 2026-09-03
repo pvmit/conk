@@ -1,4 +1,5 @@
 import { emptyPoints, POINT_IDS } from "../types.js";
+import { liveMs } from "../time.js";
 
 function asNumber(value) {
   const n = typeof value === "number" ? value : Number(value);
@@ -17,6 +18,9 @@ function asPoint(row) {
     blue_total_time: asNumber(row.blue_total_time),
     last_change_timestamp: String(row.last_change_timestamp),
     updated_at: String(row.updated_at),
+    red_live: row.red_live == null ? null : asNumber(row.red_live),
+    blue_live: row.blue_live == null ? null : asNumber(row.blue_live),
+    server_now: asNumber(row.server_now) || null,
   };
 }
 
@@ -82,6 +86,7 @@ async function rest(config, path, options = {}) {
     );
   }
 
+  const serverNow = Date.parse(res.headers.get("date") || "") || Date.now();
   const text = await res.text();
   let data = null;
   if (text) {
@@ -108,22 +113,49 @@ async function rest(config, path, options = {}) {
     throw new Error(`${res.status}: ${msg}`);
   }
 
-  return data;
+  return { data, serverNow };
 }
 
+function withLive(point, serverNow) {
+  return {
+    ...point,
+    server_now: serverNow,
+    red_live: point.red_live ?? liveMs(point, "red", serverNow),
+    blue_live: point.blue_live ?? liveMs(point, "blue", serverNow),
+  };
+}
+
+let snapshotAvailable = true;
+
 async function fetchPoints(config) {
-  const data = await rest(
+  if (snapshotAvailable) {
+    try {
+      const { data, serverNow } = await rest(config, "/rest/v1/rpc/points_snapshot", {
+        method: "POST",
+        body: "{}",
+      });
+      const rows = Array.isArray(data) ? data.map(asPoint) : [];
+      return POINT_IDS.map((id) => {
+        const row = rows.find((p) => p.point_id === id);
+        return withLive(row ?? emptyPoints().find((p) => p.point_id === id), serverNow);
+      });
+    } catch {
+      snapshotAvailable = false;
+    }
+  }
+  const { data, serverNow } = await rest(
     config,
     "/rest/v1/points?select=point_id,status,red_total_time,blue_total_time,last_change_timestamp,updated_at&order=point_id",
   );
   const rows = Array.isArray(data) ? data.map(asPoint) : [];
-  return POINT_IDS.map(
-    (id) => rows.find((p) => p.point_id === id) ?? emptyPoints().find((p) => p.point_id === id),
-  );
+  return POINT_IDS.map((id) => {
+    const row = rows.find((p) => p.point_id === id);
+    return withLive(row ?? emptyPoints().find((p) => p.point_id === id), serverNow);
+  });
 }
 
 async function callRpc(config, fn, args = {}) {
-  const data = await rest(config, `/rest/v1/rpc/${fn}`, {
+  const { data } = await rest(config, `/rest/v1/rpc/${fn}`, {
     method: "POST",
     body: JSON.stringify(args),
   });
@@ -144,7 +176,7 @@ function resetPayload() {
 }
 
 async function patchPoint(config, id, payload) {
-  const data = await rest(
+  const { data } = await rest(
     config,
     `/rest/v1/points?point_id=eq.${encodeURIComponent(id)}`,
     {
@@ -170,8 +202,8 @@ export async function testSupabase(raw) {
   const config = normalizeConfig(raw);
   const problem = explainConfig(config);
   if (problem) throw new Error(problem);
-  const rows = await rest(config, "/rest/v1/points?select=point_id&limit=3");
-  if (!Array.isArray(rows) || rows.length === 0) {
+  const { data } = await rest(config, "/rest/v1/points?select=point_id&limit=3");
+  if (!Array.isArray(data) || data.length === 0) {
     throw new Error("Połączono, ale tabela points jest pusta. Uruchom jeszcze raz cały skrypt SQL.");
   }
 }

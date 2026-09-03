@@ -9,13 +9,17 @@ function freeze(run) {
   };
 }
 
+function liveOf(point, team) {
+  if (team === "red" && point.red_live != null) return point.red_live;
+  if (team === "blue" && point.blue_live != null) return point.blue_live;
+  return liveMs(point, team, point.server_now || Date.now());
+}
+
 function livePoints(runs) {
   return POINT_IDS.map((id) => {
     const run = runs.get(id);
     const raw = run?.raw ?? emptyPoint(id);
-    if (!run) {
-      return { ...raw, redLive: 0, blueLive: 0 };
-    }
+    if (!run) return { ...raw, redLive: 0, blueLive: 0 };
     const extra = performance.now() - run.t0;
     return {
       ...raw,
@@ -51,36 +55,17 @@ export function watchGame(api, onUpdate) {
         pending &&
         pending.id === id &&
         point.status !== pending.status &&
-        now - pending.at < 5000
+        now - pending.at < 1200
       ) {
         continue;
       }
       if (pending && pending.id === id && point.status === pending.status) {
         pending = null;
       }
-      const prev = runs.get(id);
-      const serverClear =
-        point.status === "neutral" &&
-        Number(point.red_total_time) === 0 &&
-        Number(point.blue_total_time) === 0;
-      if (serverClear && prev && (prev.status !== "neutral" || prev.red > 0 || prev.blue > 0)) {
-        runs.set(id, {
-          status: "neutral",
-          red: 0,
-          blue: 0,
-          t0: performance.now(),
-          raw: point,
-        });
-        continue;
-      }
-      if (prev && prev.status === point.status) {
-        prev.raw = point;
-        continue;
-      }
       runs.set(id, {
         status: point.status,
-        red: liveMs(point, "red", now),
-        blue: liveMs(point, "blue", now),
+        red: liveOf(point, "red"),
+        blue: liveOf(point, "blue"),
         t0: performance.now(),
         raw: point,
       });
@@ -103,6 +88,8 @@ export function watchGame(api, onUpdate) {
         status,
         red_total_time: frozen.red,
         blue_total_time: frozen.blue,
+        red_live: frozen.red,
+        blue_live: frozen.blue,
         last_change_timestamp: iso,
         updated_at: iso,
       },

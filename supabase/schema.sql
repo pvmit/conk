@@ -153,3 +153,40 @@ grant select, insert on public.point_events to anon, authenticated;
 grant execute on function public.set_point_status(text, text) to anon, authenticated;
 grant execute on function public.reset_point(text) to anon, authenticated;
 grant execute on function public.reset_game() to anon, authenticated;
+
+create or replace function public.points_snapshot()
+returns table (
+  point_id text,
+  status text,
+  red_total_time bigint,
+  blue_total_time bigint,
+  last_change_timestamp timestamptz,
+  updated_at timestamptz,
+  red_live bigint,
+  blue_live bigint
+)
+language sql
+stable
+as $$
+  select
+    p.point_id,
+    p.status,
+    p.red_total_time,
+    p.blue_total_time,
+    p.last_change_timestamp,
+    p.updated_at,
+    case
+      when p.status = 'red' then p.red_total_time
+        + greatest(0, (extract(epoch from (now() - p.last_change_timestamp)) * 1000)::bigint)
+      else p.red_total_time
+    end,
+    case
+      when p.status = 'blue' then p.blue_total_time
+        + greatest(0, (extract(epoch from (now() - p.last_change_timestamp)) * 1000)::bigint)
+      else p.blue_total_time
+    end
+  from public.points p
+  order by p.point_id;
+$$;
+
+grant execute on function public.points_snapshot() to anon, authenticated;
