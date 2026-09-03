@@ -80,7 +80,11 @@ Repozytorium jest gotowe do wrzucenia na GitHub. W ustawieniach repo:
 
 **Settings → Pages → Deploy from a branch → `main` / `/ (root)`**
 
-Potem każdy telefon otwiera ten sam adres. Na każdym urządzeniu raz wklejasz dane Supabase (zostają w przeglądarce).
+Potem każdy telefon otwiera ten sam adres. Gracze mogą od razu wejść na **WYNIKI**:
+
+`https://pvmit.github.io/conk/#/wyniki`
+
+To publiczna tablica na żywo (sumy, paski, status A/B/C) — bez resetu i bez sterowania punktami.
 
 Na hostingu publicznym **nie wklejaj service role key**. Anon key jest kluczem przeglądarkowym — kto zna URL aplikacji i klucz, może zmieniać stan gry. Do gry harcerskiej to zwykle wystarcza.
 

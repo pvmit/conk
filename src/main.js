@@ -5,7 +5,7 @@ import { isPointId } from "./types.js";
 import { renderHome } from "./screens/home.js";
 import { renderPoint } from "./screens/point.js";
 import { renderAdmin } from "./screens/admin.js";
-import { renderSetup } from "./screens/setup.js";
+import { renderResults } from "./screens/results.js";
 
 const app = document.querySelector("#app");
 if (!app) throw new Error("Brak #app");
@@ -36,6 +36,10 @@ async function route() {
   }
   if (parts[0] === "setup") {
     stop = renderSetup(app, api);
+    return;
+  }
+  if (parts[0] === "wyniki" || parts[0] === "score") {
+    stop = renderResults(app, api);
     return;
   }
   if (parts[0] === "admin") {

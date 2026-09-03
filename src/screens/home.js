@@ -24,6 +24,7 @@ export function renderHome(root, api) {
       button("PUNKT A", "#/point/A"),
       button("PUNKT B", "#/point/B"),
       button("PUNKT C", "#/point/C"),
+      el("button", { class: "role score", "data-go": "#/wyniki" }, ["WYNIKI"]),
       el("button", { class: "role admin", "data-go": "#/admin" }, ["ADMINISTRATOR"]),
     ]),
   );

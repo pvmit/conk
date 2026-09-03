@@ -187,6 +187,14 @@ a {
   border: none;
 }
 
+.role.score {
+  grid-column: 1 / -1;
+  min-height: 88px;
+  background: #f5a623;
+  color: #111;
+  border: none;
+}
+
 .banner {
   border: 1px dashed var(--amber);
   color: var(--amber);
@@ -284,8 +292,19 @@ a {
   line-height: 1;
 }
 
-.total-row.red {
-  color: var(--red);
+.lead-line {
+  margin: 4px 0 0;
+  letter-spacing: 0.12em;
+  font-size: clamp(1rem, 2.6vw, 1.35rem);
+  font-weight: 700;
+}
+
+.total-row.ahead {
+  text-shadow: 0 0 24px currentColor;
+}
+
+.board .total-row {
+  font-size: clamp(2.8rem, 11vw, 6.2rem);
 }
 
 .total-row.blue {
@@ -583,7 +602,8 @@ a {
     grid-template-columns: 1fr;
   }
 
-  .role.admin {
+  .role.admin,
+  .role.score {
     grid-column: auto;
   }
 }
