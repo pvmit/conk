@@ -1,0 +1,10 @@
+{
+  "name": "conquest",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Gra terenowa Conquest — czasy kontroli punktów i panel dowodzenia na żywo.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
