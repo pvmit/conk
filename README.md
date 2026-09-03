@@ -51,7 +51,8 @@ Do prawdziwej gry na osobnych telefonach potrzebny jest Supabase.
 2. W SQL Editor wklej i uruchom [`supabase/schema.sql`](supabase/schema.sql).
 3. W Database → Replication włącz tabelę `points` (Realtime).
 4. Skopiuj **Project URL** i **anon public** key (Settings → API).
-5. W aplikacji wejdź w **Ustawienia** i wklej te same dane na **każdym** telefonie (punkty + admin).
+5. W aplikacji wejdź w **Ustawienia**, wklej dane **raz** i kliknij **Skopiuj link dla telefonów**. Reszta urządzeń tylko otwiera ten link — nic nie wpisuje.
+6. Albo wpisz URL i klucz do [`config.json`](config.json) w repozytorium. Po wrzuceniu na GitHub Pages każdy telefon łączy się sam.
 
 Od tego momentu zmiana statusu na punkcie A od razu widać na panelu administratora — bez odświeżania strony.
 

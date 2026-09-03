@@ -1,4 +1,5 @@
 import { createGameApi } from "./api/index.js";
+import { consumeJoinLink, loadBundledConfig } from "./config.js";
 import { clear } from "./dom.js";
 import { isPointId } from "./types.js";
 import { renderHome } from "./screens/home.js";
@@ -12,6 +13,15 @@ if (!app) throw new Error("Brak #app");
 let api;
 let stop;
 
+async function boot() {
+  consumeJoinLink();
+  await loadBundledConfig();
+  window.addEventListener("hashchange", () => {
+    void route();
+  });
+  await route();
+}
+
 async function route() {
   stop?.();
   clear(app);
@@ -20,6 +30,10 @@ async function route() {
   const hash = location.hash.replace(/^#/, "") || "/";
   const parts = hash.split("/").filter(Boolean);
 
+  if (parts[0] === "join") {
+    location.hash = "#/";
+    return;
+  }
   if (parts[0] === "setup") {
     stop = renderSetup(app, api);
     return;
@@ -35,7 +49,4 @@ async function route() {
   stop = renderHome(app, api);
 }
 
-window.addEventListener("hashchange", () => {
-  void route();
-});
-void route();
+void boot();

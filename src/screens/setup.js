@@ -1,4 +1,4 @@
-import { clearConfig, getConfig, saveConfig } from "../config.js";
+import { clearConfig, getConfig, joinUrl, saveConfig } from "../config.js";
 import { testSupabase, normalizeConfig } from "../api/index.js";
 import { connectionBadge, el } from "../dom.js";
 
@@ -30,11 +30,17 @@ export function renderSetup(root, api) {
         el("label", {}, ["URL projektu", url]),
         el("label", {}, ["Klucz anon albo publishable", key]),
         el("button", { class: "primary", id: "save" }, ["Zapisz i sprawdź połączenie"]),
-        el("button", { class: "ghost", id: "demo" }, ["Wyczyść i wróć do trybu demo"]),
+        el("button", { class: "ghost", id: "share" }, ["Skopiuj link dla telefonów"]),
+        el("button", { class: "ghost", id: "demo" }, ["Wyczyść zapis na tym telefonie"]),
         status,
       ]),
       el("div", { class: "help" }, [
-        el("p", {}, ["Na telefonach punktów i na panelu admina wklej te same dane."]),
+        el("p", {}, [
+          "Najwygodniej: wpisz dane raz tutaj i kliknij „Skopiuj link dla telefonów”. Reszta otwiera ten link i nic nie wpisuje.",
+        ]),
+        el("p", {}, [
+          "Albo wklej URL i klucz do pliku config.json w repozytorium — wtedy sama strona GitHub łączy wszystkich.",
+        ]),
         el("ol", {}, [
           el("li", {}, ["Utwórz darmowy projekt na supabase.com"]),
           el("li", {}, ["SQL Editor → wklej treść pliku schema.sql (nie link) → Run"]),
@@ -50,6 +56,27 @@ export function renderSetup(root, api) {
     if (!target) return;
     if (target.dataset.go) {
       location.hash = target.dataset.go;
+      return;
+    }
+    if (target.id === "share") {
+      const cfg = getConfig() ?? normalizeConfig({
+        supabaseUrl: url.value,
+        supabaseAnonKey: key.value,
+      });
+      const link = joinUrl(cfg ?? { supabaseUrl: url.value, supabaseAnonKey: key.value });
+      if (!link) {
+        status.className = "error";
+        status.textContent = "Najpierw wklej URL i klucz.";
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(link);
+        status.className = "ok";
+        status.textContent = "Link skopiowany. Otwórz go na telefonach punktów i admina.";
+      } catch {
+        status.className = "muted";
+        status.textContent = link;
+      }
       return;
     }
     if (target.id === "demo") {
