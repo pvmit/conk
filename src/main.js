@@ -2,10 +2,11 @@ import { createGameApi } from "./api/index.js";
 import { consumeJoinLink, loadBundledConfig } from "./config.js";
 import { clear } from "./dom.js";
 import { isPointId } from "./types.js";
-import { renderHome } from "./screens/home.js";
-import { renderPoint } from "./screens/point.js";
-import { renderAdmin } from "./screens/admin.js";
-import { renderResults } from "./screens/results.js";
+import { renderHome } from "./screens/home.js?v=wyniki2";
+import { renderPoint } from "./screens/point.js?v=wyniki2";
+import { renderAdmin } from "./screens/admin.js?v=wyniki2";
+import { renderSetup } from "./screens/setup.js?v=wyniki2";
+import { renderResults } from "./screens/results.js?v=wyniki2";
 
 const app = document.querySelector("#app");
 if (!app) throw new Error("Brak #app");
@@ -30,15 +31,17 @@ async function route() {
   const hash = location.hash.replace(/^#/, "") || "/";
   const parts = hash.split("/").filter(Boolean);
 
-  if (parts[0] === "join") {
+  const routeName = (parts[0] || "").toLowerCase();
+
+  if (routeName === "join") {
     location.hash = "#/";
     return;
   }
-  if (parts[0] === "setup") {
+  if (routeName === "setup") {
     stop = renderSetup(app, api);
     return;
   }
-  if (parts[0] === "wyniki" || parts[0] === "score") {
+  if (routeName === "wyniki" || routeName === "score" || routeName === "wynik") {
     stop = renderResults(app, api);
     return;
   }
