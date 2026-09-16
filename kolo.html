@@ -86,7 +86,7 @@
       border-radius: 8px;
       background: #0c1322;
       border: 1px solid var(--line);
-      font-size: 14px;
+      font-size: 13px;
     }
     .list li.gone {
       opacity: 0.35;
@@ -283,7 +283,7 @@
         <ul class="list" id="remaining"></ul>
       </div>
       <p class="hint">
-        Wiedza znika po wylosowaniu. W etapie 1 jest więcej kategorii niż pytań — część nie wypadnie. Trzy pola podpowiedzi i skrzynka zostają, aż oznaczysz je jako wylicytowane.
+        Wiedza znika po wylosowaniu. Phishing gracie bez koła, potem losujecie do końca czasu. Trzy podpowiedzi i skrzynka zostają, aż oznaczysz je jako wylicytowane.
       </p>
       <div>
         <p class="sub" style="margin-bottom:8px">Wylosowane</p>
@@ -322,19 +322,21 @@
       etap1: {
         name: "Etap 1",
         items: [
-          { id: "phishing", label: "Phishing", short: "PHISHING", type: "knowledge", color: "#c0392b" },
           { id: "hasla", label: "Hasła i 2FA", short: "HASŁA", type: "knowledge", color: "#2471a3" },
           { id: "hint1", label: "Podpowiedź", short: "PODPOWIEDŹ", type: "special", color: "#d4a017" },
           { id: "slad", label: "Ślad cyfrowy", short: "ŚLAD", type: "knowledge", color: "#6c3483" },
           { id: "szyfr", label: "Szyfrowanie", short: "SZYFR", type: "knowledge", color: "#117a65" },
           { id: "deepfake", label: "Deepfake", short: "DEEPFAKE", type: "knowledge", color: "#b9770e" },
-          { id: "hint2", label: "Podpowiedź", short: "PODPOWIEDŹ", type: "special", color: "#e8c547" },
           { id: "meta", label: "Metadane", short: "METADANE", type: "knowledge", color: "#1e8449" },
-          { id: "vpn", label: "VPN", short: "VPN", type: "knowledge", color: "#1a5276" },
+          { id: "hint2", label: "Podpowiedź", short: "PODPOWIEDŹ", type: "special", color: "#e8c547" },
+          { id: "skin", label: "Gry — darmowy skin", short: "SKIN", type: "knowledge", color: "#1a5276" },
           { id: "ransom", label: "Ransomware", short: "RANSOM", type: "knowledge", color: "#7b241c" },
+          { id: "algo", label: "Algorytmy", short: "ALGORYTM", type: "knowledge", color: "#4a235a" },
+          { id: "micro", label: "Gry i mikropłatności", short: "MIKROPŁAT.", type: "knowledge", color: "#6e2c00" },
           { id: "hint3", label: "Podpowiedź", short: "PODPOWIEDŹ", type: "special", color: "#b8860b" },
-          { id: "cookies", label: "Cookies", short: "COOKIES", type: "knowledge", color: "#6e2c00" },
-          { id: "incognito", label: "Incognito", short: "INCOGNITO", type: "knowledge", color: "#4a235a" }
+          { id: "wellbeing", label: "Cyfrowy dobrostan", short: "DOBROSTAN", type: "knowledge", color: "#0e6655" },
+          { id: "cloud", label: "Chmura", short: "CHMURA", type: "knowledge", color: "#1c2833" },
+          { id: "wifi", label: "Wi-Fi a internet", short: "WI-FI", type: "knowledge", color: "#154360" }
         ]
       },
       final: {
@@ -343,13 +345,13 @@
           { id: "prawo", label: "Prawo i wizerunek", short: "PRAWO", type: "knowledge", color: "#5b2c6f" },
           { id: "siec", label: "Sieć publiczna", short: "SIEĆ", type: "knowledge", color: "#1a5276" },
           { id: "presja", label: "Presja w sieci", short: "PRESJA", type: "knowledge", color: "#922b21" },
-          { id: "ai", label: "AI", short: "AI", type: "knowledge", color: "#0e6655" },
+          { id: "ai", label: "AI i prywatność", short: "AI", type: "knowledge", color: "#0e6655" },
           { id: "box", label: "Czarna skrzynka", short: "SKRZYNKA", type: "special", color: "#1c1c1c" }
         ]
       }
     };
 
-    const KEY = "aok-kolo-v4";
+    const KEY = "aok-kolo-v5";
     const canvas = document.getElementById("wheel");
     const ctx = canvas.getContext("2d");
     const rot = document.getElementById("rot");
