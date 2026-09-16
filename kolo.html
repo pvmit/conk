@@ -223,8 +223,10 @@
       background: #10182a;
       border: 1px solid var(--gold-2);
       border-radius: 20px;
-      padding: 32px 28px 24px;
-      width: min(520px, 100%);
+      padding: 28px 28px 22px;
+      width: min(920px, 96%);
+      max-height: 90vh;
+      overflow: auto;
       text-align: center;
       box-shadow: 0 30px 80px rgba(0,0,0,.5);
     }
@@ -236,11 +238,26 @@
       margin: 0 0 8px;
     }
     .card h2 {
-      margin: 0 0 10px;
-      font-size: clamp(28px, 5vw, 44px);
+      margin: 0 0 14px;
+      font-size: clamp(24px, 4vw, 40px);
       line-height: 1.1;
     }
-    .card p { color: var(--muted); margin: 0 0 22px; }
+    .card .question {
+      text-align: left;
+      font-size: clamp(18px, 2.5vw, 28px);
+      line-height: 1.4;
+      color: var(--text);
+      margin: 0 0 18px;
+    }
+    .card .abcd {
+      text-align: left;
+      margin: 0 0 18px;
+      padding-left: 1.2em;
+      font-size: clamp(16px, 2.1vw, 22px);
+      line-height: 1.4;
+      color: #ffe08a;
+    }
+    .card p.note { color: var(--muted); margin: 0 0 18px; }
     .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     .card button {
       border-radius: 999px;
@@ -290,6 +307,7 @@
         <div class="log" id="log"></div>
       </div>
       <div class="actions">
+        <button class="ghost" id="show-phishing" type="button">Pokaż phishing</button>
         <button class="ghost" id="fullscreen" type="button">Pełny ekran</button>
         <button class="ghost" id="reset-stage" type="button">Reset etapu</button>
         <button class="ghost" id="reset-all" type="button">Reset całej gry</button>
@@ -312,7 +330,9 @@
     <div class="card">
       <p class="kind" id="result-kind"></p>
       <h2 id="result-title"></h2>
-      <p id="result-note"></p>
+      <p class="question" id="result-question"></p>
+      <ol class="abcd" id="result-abcd" hidden></ol>
+      <p class="note" id="result-note"></p>
       <div class="row" id="result-actions"></div>
     </div>
   </div>
@@ -324,7 +344,7 @@
         items: [
           { id: "hasla", label: "Hasła i 2FA", short: "HASŁA", type: "knowledge", color: "#2471a3" },
           { id: "hint1", label: "Podpowiedź", short: "PODPOWIEDŹ", type: "special", color: "#d4a017" },
-          { id: "slad", label: "Ślad cyfrowy", short: "ŚLAD", type: "knowledge", color: "#6c3483" },
+          { id: "license", label: "Czy naprawdę posiadasz grę?", short: "LICENCJA", type: "knowledge", color: "#6c3483" },
           { id: "szyfr", label: "Szyfrowanie", short: "SZYFR", type: "knowledge", color: "#117a65" },
           { id: "deepfake", label: "Deepfake", short: "DEEPFAKE", type: "knowledge", color: "#b9770e" },
           { id: "meta", label: "Metadane", short: "METADANE", type: "knowledge", color: "#1e8449" },
@@ -342,16 +362,85 @@
       final: {
         name: "Finał",
         items: [
-          { id: "prawo", label: "Prawo i wizerunek", short: "PRAWO", type: "knowledge", color: "#5b2c6f" },
-          { id: "siec", label: "Sieć publiczna", short: "SIEĆ", type: "knowledge", color: "#1a5276" },
-          { id: "presja", label: "Presja w sieci", short: "PRESJA", type: "knowledge", color: "#922b21" },
-          { id: "ai", label: "AI i prywatność", short: "AI", type: "knowledge", color: "#0e6655" },
+          { id: "hijack", label: "Przejęte konto", short: "KONTO", type: "knowledge", color: "#5b2c6f" },
+          { id: "phone", label: "Zgubiony telefon", short: "TELEFON", type: "knowledge", color: "#1a5276" },
+          { id: "screenshot", label: "Screenshot nie jest dowodem", short: "SCREENSHOT", type: "knowledge", color: "#922b21" },
+          { id: "perms", label: "Uprawnienia aplikacji", short: "UPRAWNIENIA", type: "knowledge", color: "#0e6655" },
           { id: "box", label: "Czarna skrzynka", short: "SKRZYNKA", type: "special", color: "#1c1c1c" }
         ]
       }
     };
 
-    const KEY = "aok-kolo-v5";
+    const PHISHING = { id: "phishing", label: "Phishing", short: "PHISHING", type: "knowledge", color: "#c0392b" };
+
+    const QUESTIONS = {
+      phishing: {
+        text: "Dostałaś SMS: „Paczka InPost zatrzymana. Dopłać 2,99 zł: inpost-pl-oplata.shop/pay”. Podaj co najmniej dwa sygnały, że to oszustwo, i co robisz zamiast klikać.",
+        abcd: ["Płacę, bo 2,99 zł to mało.", "Klikam, ale nie wpisuję karty.", "Sprawdzam przesyłkę w oficjalnej apce / na stronie wpisanej sam i nie klikam linku z SMS-a.", "Odpisuję „STOP”, żeby ich zdemaskować."]
+      },
+      hasla: {
+        text: "Dlaczego kod z SMS-a jest słabszym 2FA niż aplikacja authenticator (albo klucz)? I po co są kody zapasowe / recovery?",
+        abcd: ["SMS jest najbezpieczniejszy, bo przychodzi z sieci operatora.", "SMS da się przechwycić; apka/klucz jest mocniejszy; kody zapasowe są na zgubiony telefon.", "2FA jest zbędne, jeśli hasło ma 16 znaków.", "Recovery wpisujesz w bio na Insta, żeby znajomi wiedzieli."]
+      },
+      license: {
+        text: "Kupujesz grę cyfrową za 250 zł. Po trzech latach znika ona ze sklepu. Jedna osoba mówi: „straciłeś ją natychmiast”, druga: „zapłaciłem, więc jest moja na zawsze i platforma nie ma nic do gadania”. Kto ma rację? Wyjaśnij, co najczęściej kupujesz i podaj jedno ograniczenie w porównaniu z fizyczną kopią.",
+        abcd: ["Gra usunięta ze sklepu zawsze natychmiast znika wszystkim z biblioteki.", "Zwykle kupujesz licencję przypisaną do konta; delisting często nie odbiera gry obecnym użytkownikom, ale dostęp zależy od platformy i jej zasad.", "Zapłata oznacza, że wolno sprzedać konto i dowolnie kopiować grę.", "Gra cyfrowa i fizyczna dają zawsze dokładnie te same prawa."]
+      },
+      szyfr: {
+        text: "Co znaczy, że czat jest szyfrowany end-to-end? Podaj jedną rzecz, przed którą to nie chroni.",
+        abcd: ["Nawet odbiorca nie może zrobić screenshota.", "Policja nigdy nie przeczyta, cokolwiek zrobisz.", "Serwer nie czyta treści; screenshot, drugi człowiek i chory telefon nadal mogą wyciec.", "E2E znaczy, że wiadomość kasuje się po 5 s."]
+      },
+      deepfake: {
+        text: "Na TikToku leci film: polityk „ogłasza” wojnę. Zanim prześlesz to dalej „żeby wiedzieli”: jak weryfikujesz (min. 2 sposoby) i dlaczego samo udostępnienie „w ramach ostrzeżenia” szkodzi?",
+        abcd: ["Jak film jest ostry, na pewno prawdziwy.", "Wrzuć z dopiskiem „nie wiem czy prawda”. To zdejmuje odpowiedzialność.", "Sprawdź źródło i czy potwierdzają to niezależne media; nie puszczaj dalej „na wszelki wypadek”.", "AI zawsze zostawia znak wodny."]
+      },
+      meta: {
+        text: "Co może zawierać oryginalny plik zdjęcia z wakacji oprócz samego obrazu? Podaj dwa przykłady i co zrobić przed wrzuceniem fotki publicznie.",
+        abcd: ["W pliku jest tylko obraz, reszta ginie przy wysyłce.", "Mogą być GPS, data, model telefonu; wyłącz lokalizację i sprawdź plik przed wrzuceniem.", "Metadane widać tylko na komputerze CIA.", "Wystarczy filtr na Insta."]
+      },
+      skin: {
+        text: "Znajomy na Discordzie wysyła stronę: „Zaloguj się przez Steam i odbierz darmowy skin”. Strona wygląda jak Steam, a oferta znika za 10 minut. Podaj dwa sygnały oszustwa i powiedz, co robisz, jeśli zdążyłeś już wpisać login i hasło.",
+        abcd: ["Loguję się, bo link przyszedł od znajomego.", "Sprawdzam domenę; jeśli podałem dane, sam wchodzę na Steam, zmieniam hasło i wylogowuję inne sesje.", "Wystarczy usunąć wiadomość na Discordzie.", "Podaję kod 2FA, żeby potwierdzić odbiór skina."]
+      },
+      ransom: {
+        text: "Co to jest ransomware? Co robisz od razu po wykryciu i co jest prawdziwą obroną na co dzień?",
+        abcd: ["Płacę szybko, bo taniej niż backup.", "Odłączam od sieci, zgłaszam dorosłemu; na co dzień backup offline i nie otwieram dziwnych załączników.", "Formatuję dysk natychmiast, bez słowa.", "To tylko straszak, na telefonie nie ma ransomware."]
+      },
+      algo: {
+        text: "Przez kilka dni oglądasz na TikToku filmy o teorii spiskowej — nie dlatego, że w nią wierzysz, tylko „dla beki”. Po chwili cała tablica jest nimi wypełniona. Dlaczego algorytm pokazuje ich coraz więcej i jak możesz zmienić swoją tablicę?",
+        abcd: ["TikTok sprawdził, w co naprawdę wierzysz.", "Długie oglądanie jest sygnałem zainteresowania; pomogą „nie interesuje mnie” i świadome oglądanie innych tematów.", "Algorytm losuje filmy i niczego nie zapamiętuje.", "Jedynym rozwiązaniem jest nowy telefon."]
+      },
+      micro: {
+        text: "W grze skórka kosztuje 1200 kryształów. Możesz kupić 1000 kryształów za 19,99 zł albo 2500 za 39,99 zł. Oferta znika za godzinę. Dlaczego gra nie pokazuje po prostu ceny skórki w złotówkach? Podaj dwa mechanizmy, które mają skłonić cię do wydania więcej.",
+        abcd: ["Kryształy pomagają szybko policzyć cenę.", "Waluta zasłania cenę, niedopasowane paczki zostawiają resztę, a zegar tworzy presję.", "Oferta czasowa zawsze jest najtańsza.", "Niewydane kryształy automatycznie wracają na konto bankowe."]
+      },
+      wellbeing: {
+        text: "Otwierasz telefon „tylko sprawdzić wiadomość”, a po 40 minutach nadal przewijasz rolki. Podaj dwa rozwiązania w aplikacjach, które utrudniają odłożenie telefonu, i dwie rzeczy, które możesz zmienić u siebie.",
+        abcd: ["To wyłącznie brak silnej woli użytkownika.", "Autoplay, nieskończony feed i powiadomienia zatrzymują uwagę; pomagają limity, tryb skupienia i wyłączenie powiadomień.", "Trzeba ładować telefon do 100%.", "Najlepiej włączyć wszystkie powiadomienia, żeby szybciej je zamknąć."]
+      },
+      cloud: {
+        text: "Zdjęcia z telefonu są synchronizowane z chmurą. Usuwasz zdjęcie z galerii, żeby zwolnić miejsce. Kolega twierdzi, że kopia na pewno zostanie w chmurze. Czy ma rację? Co trzeba sprawdzić przed usuwaniem?",
+        abcd: ["Wszystko wysłane do chmury zostaje tam na zawsze.", "Synchronizacja może powtórzyć usunięcie wszędzie; przed kasowaniem sprawdź ustawienia, kosz i niezależny backup.", "Chmura działa tylko podczas deszczu.", "Wystarczy mieć wolne miejsce w telefonie."]
+      },
+      wifi: {
+        text: "Telefon pokazuje pełny zasięg Wi-Fi, ale żadna strona się nie otwiera. Czy to możliwe? Wyjaśnij różnicę między Wi-Fi a internetem i podaj jedną rzecz, którą sprawdzasz.",
+        abcd: ["Pełne kreski oznaczają, że każda strona musi działać.", "Telefon może widzieć router, mimo że router stracił połączenie z internetem.", "Wi-Fi i internet to dwie nazwy dokładnie tej samej rzeczy.", "Problem zawsze oznacza wirusa."]
+      },
+      hijack: {
+        text: "Znajoma pisze na Discordzie z prośbą o BLIK. Chwilę później z jej konta lecą linki do „darmowych skinów”. Ona ma dostęp do telefonu, ale nie może zalogować się na Discorda. Co prawdopodobnie się stało i jakie trzy działania powinna wykonać w pierwszej kolejności?"
+      },
+      phone: {
+        text: "Po wyjściu z autobusu orientujesz się, że nie masz telefonu. Nie wiesz, czy został na siedzeniu, czy ktoś go zabrał. Telefon nie miał blokady ekranu, a są na nim zalogowane poczta, media społecznościowe i aplikacja bankowa. Podaj trzy najważniejsze działania i określ, co robisz najpierw."
+      },
+      screenshot: {
+        text: "Na klasową grupę trafia screenshot wiadomości: „Jutro lekcje odwołane z powodu awarii budynku”. Nie ma linku ani pełnej nazwy nadawcy. Jedna osoba chce natychmiast rozesłać go dalej, druga twierdzi, że screenshot jest wystarczającym dowodem. Jak w ciągu kilku minut sprawdzacie, czy informacja jest prawdziwa?"
+      },
+      perms: {
+        text: "Instalujesz darmową aplikację do przerabiania zdjęć. Prosi o dostęp do zdjęć, dokładnej lokalizacji, mikrofonu, kontaktów i działania cały czas w tle. Które uprawnienia mogą być uzasadnione, które są podejrzane i co robisz, jeśli bez zaakceptowania wszystkich aplikacja nie chce działać?"
+      }
+    };
+
+    const KEY = "aok-kolo-v6";
     const canvas = document.getElementById("wheel");
     const ctx = canvas.getContext("2d");
     const rot = document.getElementById("rot");
@@ -369,6 +458,7 @@
     let pending = null;
 
     function catalog(id) {
+      if (id === "phishing") return PHISHING;
       return [...STAGES.etap1.items, ...STAGES.final.items].find((x) => x.id === id);
     }
 
@@ -503,12 +593,19 @@
 
     function openResult(item) {
       pending = item;
+      const q = QUESTIONS[item.id];
+      const questionEl = document.getElementById("result-question");
+      const abcdEl = document.getElementById("result-abcd");
       document.getElementById("result-kind").textContent =
         item.type === "special" ? "Pole specjalne" : "Kategoria wiedzy";
       document.getElementById("result-title").textContent = item.label;
+      questionEl.textContent = q ? q.text : "";
+      questionEl.hidden = !q;
+      abcdEl.hidden = true;
+      abcdEl.innerHTML = "";
       document.getElementById("result-note").textContent = item.type === "special"
         ? "Licytacja bez wkładu 500. Stawki idą do puli następnego pytania. Potem losujecie kategorię wiedzy."
-        : "Kategoria schodzi z koła. Pytanie otwarte, 60 s na naradę.";
+        : "Zostaw to na ekranie przez minutę narady. Odpowiedzi nie ma na tablicy — tylko u kadry.";
       const actions = document.getElementById("result-actions");
       actions.innerHTML = "";
       if (item.type === "special") {
@@ -521,10 +618,20 @@
         take.onclick = () => finishDraw(true);
         actions.append(keep, take);
       } else {
+        if (q && q.abcd) {
+          const hintBtn = document.createElement("button");
+          hintBtn.textContent = "Pokaż ABCD";
+          hintBtn.onclick = () => {
+            abcdEl.innerHTML = q.abcd.map((opt, i) => `<li>${"ABCD"[i]}) ${opt}</li>`).join("");
+            abcdEl.hidden = false;
+            hintBtn.remove();
+          };
+          actions.append(hintBtn);
+        }
         const ok = document.createElement("button");
         ok.className = "primary";
-        ok.textContent = "Dalej";
-        ok.onclick = () => finishDraw(true);
+        ok.textContent = item.id === "phishing" ? "Zamknij" : "Dalej";
+        ok.onclick = () => finishDraw(item.id !== "phishing");
         actions.append(ok);
       }
       overlay.classList.add("show");
@@ -532,7 +639,7 @@
 
     function finishDraw(remove) {
       if (!pending) return;
-      if (remove) {
+      if (remove && remaining[stage].includes(pending.id)) {
         remaining[stage] = remaining[stage].filter((id) => id !== pending.id);
       }
       pending = null;
@@ -599,6 +706,10 @@
       renderLists();
     }
 
+    document.getElementById("show-phishing").onclick = () => {
+      if (spinning) return;
+      openResult(PHISHING);
+    };
     document.getElementById("tab-etap1").onclick = () => setStage("etap1");
     document.getElementById("tab-final").onclick = () => setStage("final");
     spinBtn.onclick = spin;
