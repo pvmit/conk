@@ -332,7 +332,6 @@
       <h2 id="result-title"></h2>
       <p class="question" id="result-question"></p>
       <ol class="abcd" id="result-abcd" hidden></ol>
-      <p class="note" id="result-note"></p>
       <div class="row" id="result-actions"></div>
     </div>
   </div>
@@ -348,12 +347,12 @@
           { id: "szyfr", label: "Szyfrowanie", short: "SZYFR", type: "knowledge", color: "#117a65" },
           { id: "deepfake", label: "Deepfake", short: "DEEPFAKE", type: "knowledge", color: "#b9770e" },
           { id: "meta", label: "Metadane", short: "METADANE", type: "knowledge", color: "#1e8449" },
-          { id: "hint2", label: "Podpowiedź", short: "PODPOWIEDŹ", type: "special", color: "#e8c547" },
+          { id: "hint2", label: "Podpowiedź", short: "PODPOWIEDŹ", type: "special", color: "#d4a017" },
           { id: "skin", label: "Gry — darmowy skin", short: "SKIN", type: "knowledge", color: "#1a5276" },
           { id: "ransom", label: "Ransomware", short: "RANSOM", type: "knowledge", color: "#7b241c" },
           { id: "algo", label: "Algorytmy", short: "ALGORYTM", type: "knowledge", color: "#4a235a" },
           { id: "micro", label: "Gry i mikropłatności", short: "MIKROPŁAT.", type: "knowledge", color: "#6e2c00" },
-          { id: "hint3", label: "Podpowiedź", short: "PODPOWIEDŹ", type: "special", color: "#b8860b" },
+          { id: "hint3", label: "Podpowiedź", short: "PODPOWIEDŹ", type: "special", color: "#d4a017" },
           { id: "wellbeing", label: "Cyfrowy dobrostan", short: "DOBROSTAN", type: "knowledge", color: "#0e6655" },
           { id: "cloud", label: "Chmura", short: "CHMURA", type: "knowledge", color: "#1c2833" },
           { id: "wifi", label: "Wi-Fi a internet", short: "WI-FI", type: "knowledge", color: "#154360" }
@@ -605,8 +604,6 @@
 
       if (item.type === "special") {
         document.getElementById("result-kind").textContent = "Pole specjalne — licytacja";
-        document.getElementById("result-note").textContent =
-          "Bez wkładu 500. Min. 500, przebicie 500. Stawki idą do puli następnego pytania.";
         const keep = document.createElement("button");
         keep.textContent = "Zostaw na kole";
         keep.onclick = () => finishDraw(false);
@@ -617,8 +614,6 @@
         actions.append(keep, take);
       } else {
         document.getElementById("result-kind").textContent = "Licytacja";
-        document.getElementById("result-note").textContent =
-          "Wkład 500 od każdego. Słucham państwa. Pytanie dopiero po licytacji.";
         const ask = document.createElement("button");
         ask.className = "primary";
         ask.textContent = "Pokaż pytanie";
@@ -638,8 +633,6 @@
       questionEl.hidden = !q;
       abcdEl.hidden = true;
       abcdEl.innerHTML = "";
-      document.getElementById("result-note").textContent =
-        "Minuta na naradę. Odpowiedź podaje kapitan. Klucz ma tylko kadra.";
       const actions = document.getElementById("result-actions");
       actions.innerHTML = "";
       if (q && q.abcd) {
