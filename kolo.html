@@ -593,22 +593,20 @@
 
     function openResult(item) {
       pending = item;
-      const q = QUESTIONS[item.id];
       const questionEl = document.getElementById("result-question");
       const abcdEl = document.getElementById("result-abcd");
-      document.getElementById("result-kind").textContent =
-        item.type === "special" ? "Pole specjalne" : "Kategoria wiedzy";
-      document.getElementById("result-title").textContent = item.label;
-      questionEl.textContent = q ? q.text : "";
-      questionEl.hidden = !q;
+      questionEl.hidden = true;
+      questionEl.textContent = "";
       abcdEl.hidden = true;
       abcdEl.innerHTML = "";
-      document.getElementById("result-note").textContent = item.type === "special"
-        ? "Licytacja bez wkładu 500. Stawki idą do puli następnego pytania. Potem losujecie kategorię wiedzy."
-        : "Zostaw to na ekranie przez minutę narady. Odpowiedzi nie ma na tablicy — tylko u kadry.";
+      document.getElementById("result-title").textContent = item.label;
       const actions = document.getElementById("result-actions");
       actions.innerHTML = "";
+
       if (item.type === "special") {
+        document.getElementById("result-kind").textContent = "Pole specjalne — licytacja";
+        document.getElementById("result-note").textContent =
+          "Bez wkładu 500. Min. 500, przebicie 500. Stawki idą do puli następnego pytania.";
         const keep = document.createElement("button");
         keep.textContent = "Zostaw na kole";
         keep.onclick = () => finishDraw(false);
@@ -618,23 +616,47 @@
         take.onclick = () => finishDraw(true);
         actions.append(keep, take);
       } else {
-        if (q && q.abcd) {
-          const hintBtn = document.createElement("button");
-          hintBtn.textContent = "Pokaż ABCD";
-          hintBtn.onclick = () => {
-            abcdEl.innerHTML = q.abcd.map((opt, i) => `<li>${"ABCD"[i]}) ${opt}</li>`).join("");
-            abcdEl.hidden = false;
-            hintBtn.remove();
-          };
-          actions.append(hintBtn);
-        }
-        const ok = document.createElement("button");
-        ok.className = "primary";
-        ok.textContent = item.id === "phishing" ? "Zamknij" : "Dalej";
-        ok.onclick = () => finishDraw(item.id !== "phishing");
-        actions.append(ok);
+        document.getElementById("result-kind").textContent = "Licytacja";
+        document.getElementById("result-note").textContent =
+          "Wkład 500 od każdego. Słucham państwa. Pytanie dopiero po licytacji.";
+        const ask = document.createElement("button");
+        ask.className = "primary";
+        ask.textContent = "Pokaż pytanie";
+        ask.onclick = revealQuestion;
+        actions.append(ask);
       }
       overlay.classList.add("show");
+    }
+
+    function revealQuestion() {
+      if (!pending) return;
+      const q = QUESTIONS[pending.id];
+      const questionEl = document.getElementById("result-question");
+      const abcdEl = document.getElementById("result-abcd");
+      document.getElementById("result-kind").textContent = "Pytanie";
+      questionEl.textContent = q ? q.text : "";
+      questionEl.hidden = !q;
+      abcdEl.hidden = true;
+      abcdEl.innerHTML = "";
+      document.getElementById("result-note").textContent =
+        "Minuta na naradę. Odpowiedź podaje kapitan. Klucz ma tylko kadra.";
+      const actions = document.getElementById("result-actions");
+      actions.innerHTML = "";
+      if (q && q.abcd) {
+        const hintBtn = document.createElement("button");
+        hintBtn.textContent = "Pokaż ABCD";
+        hintBtn.onclick = () => {
+          abcdEl.innerHTML = q.abcd.map((opt, i) => `<li>${"ABCD"[i]}) ${opt}</li>`).join("");
+          abcdEl.hidden = false;
+          hintBtn.remove();
+        };
+        actions.append(hintBtn);
+      }
+      const ok = document.createElement("button");
+      ok.className = "primary";
+      ok.textContent = pending.id === "phishing" ? "Zamknij" : "Dalej";
+      ok.onclick = () => finishDraw(pending.id !== "phishing");
+      actions.append(ok);
     }
 
     function finishDraw(remove) {
@@ -720,7 +742,15 @@
       else document.exitFullscreen();
     };
     document.addEventListener("keydown", (e) => {
-      if (e.code === "Space" && !overlay.classList.contains("show")) {
+      if (overlay.classList.contains("show")) {
+        const questionEl = document.getElementById("result-question");
+        if (e.code === "Enter" && pending && pending.type !== "special" && questionEl.hidden) {
+          e.preventDefault();
+          revealQuestion();
+        }
+        return;
+      }
+      if (e.code === "Space") {
         e.preventDefault();
         spin();
       }
