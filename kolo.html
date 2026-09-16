@@ -283,7 +283,7 @@
         <ul class="list" id="remaining"></ul>
       </div>
       <p class="hint">
-        Wiedza znika po wylosowaniu. W etapie 1 jest więcej kategorii niż pytań — część nie wypadnie. Podpowiedź i skrzynka zostają, aż oznaczysz je jako wylicytowane.
+        Wiedza znika po wylosowaniu. W etapie 1 jest więcej kategorii niż pytań — część nie wypadnie. Trzy pola podpowiedzi i skrzynka zostają, aż oznaczysz je jako wylicytowane.
       </p>
       <div>
         <p class="sub" style="margin-bottom:8px">Wylosowane</p>
@@ -332,7 +332,9 @@
           { id: "ransom", label: "Ransomware", short: "RANSOM", type: "knowledge", color: "#7b241c" },
           { id: "cookies", label: "Cookies", short: "COOKIES", type: "knowledge", color: "#6e2c00" },
           { id: "incognito", label: "Incognito", short: "INCOGNITO", type: "knowledge", color: "#4a235a" },
-          { id: "hint", label: "Podpowiedź", short: "PODPOWIEDŹ", type: "special", color: "#d4a017" }
+          { id: "hint1", label: "Podpowiedź", short: "PODPOWIEDŹ", type: "special", color: "#d4a017" },
+          { id: "hint2", label: "Podpowiedź", short: "PODPOWIEDŹ", type: "special", color: "#e8c547" },
+          { id: "hint3", label: "Podpowiedź", short: "PODPOWIEDŹ", type: "special", color: "#b8860b" }
         ]
       },
       final: {
@@ -347,7 +349,7 @@
       }
     };
 
-    const KEY = "aok-kolo-v2";
+    const KEY = "aok-kolo-v3";
     const canvas = document.getElementById("wheel");
     const ctx = canvas.getContext("2d");
     const rot = document.getElementById("rot");
@@ -431,7 +433,7 @@
         const flip = Math.cos(mid) < 0;
         if (flip) ctx.rotate(Math.PI);
         ctx.fillStyle = item.type === "special" ? "#fff6d4" : "#fff";
-        ctx.font = `700 ${items.length > 8 ? 20 : items.length > 5 ? 26 : 30}px Segoe UI`;
+        ctx.font = `700 ${items.length > 12 ? 18 : items.length > 8 ? 20 : items.length > 5 ? 26 : 30}px Segoe UI`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.shadowColor = "rgba(0,0,0,.45)";
