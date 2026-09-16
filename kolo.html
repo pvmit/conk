@@ -6,124 +6,97 @@
   <title>Koło — Awantura o kasę</title>
   <style>
     :root {
-      --bg: #070b14;
-      --panel: #10182a;
-      --line: #2a3a5c;
-      --gold: #f0c14b;
-      --gold-2: #d4a017;
-      --text: #f4f1e8;
-      --muted: #9aa7c2;
-      --special: #f0c14b;
+      --bg: #cfc8bb;
+      --panel: #efeae0;
+      --ink: #171717;
+      --muted: #5c584f;
+      --line: #171717;
+      --yellow: #f5c400;
+      --red: #c41e3a;
     }
 
     * { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; }
     body {
-      font-family: "Segoe UI", "Trebuchet MS", sans-serif;
-      background:
-        radial-gradient(ellipse 80% 50% at 50% -10%, #1b2a4d 0%, transparent 55%),
-        var(--bg);
-      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
       overflow: hidden;
     }
 
     .app {
       display: grid;
-      grid-template-columns: 300px 1fr;
+      grid-template-columns: 280px 1fr;
       height: 100%;
-      gap: 0;
     }
 
     aside {
-      background: rgba(16, 24, 42, 0.92);
-      border-right: 1px solid var(--line);
-      padding: 20px 18px;
+      background: var(--panel);
+      border-right: 3px solid var(--line);
+      padding: 16px 14px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       overflow: auto;
     }
 
     h1 {
-      font-size: 13px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin: 0 0 4px;
+      font-size: 22px;
+      font-weight: 800;
+      margin: 0;
+      line-height: 1.1;
     }
-    .sub { color: var(--muted); font-size: 13px; margin: 0; }
+    .sub { color: var(--muted); font-size: 13px; margin: 4px 0 0; }
 
     .tabs {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 6px;
     }
-    .tab, button {
-      font: inherit;
-      cursor: pointer;
+    .tab, button { font: inherit; cursor: pointer; }
+    .tab, .ghost, .spin, .card button {
+      border: 2px solid var(--line);
+      border-radius: 2px;
+      background: #fff;
+      color: var(--ink);
+      padding: 8px 10px;
     }
-    .tab {
-      background: #0c1322;
-      color: var(--text);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 10px 8px;
-    }
-    .tab.active {
-      background: linear-gradient(180deg, #f0c14b, #c49212);
-      color: #1a1203;
-      border-color: #f6d77a;
-      font-weight: 700;
+    .tab.active, .card .primary, .spin {
+      background: var(--yellow);
+      font-weight: 800;
     }
 
-    .list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+    .list { list-style: none; margin: 0; padding: 0; }
     .list li {
       display: flex;
       justify-content: space-between;
-      align-items: center;
       gap: 8px;
-      padding: 8px 10px;
-      border-radius: 8px;
-      background: #0c1322;
-      border: 1px solid var(--line);
+      padding: 7px 0;
+      border-bottom: 1px solid #cbbfae;
       font-size: 13px;
     }
-    .list li.gone {
-      opacity: 0.35;
-      text-decoration: line-through;
-    }
-    .tag {
-      font-size: 10px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--gold);
-    }
-    .tag.knowledge { color: #8fd3ff; }
+    .list li.gone { color: #8a8378; text-decoration: line-through; }
+    .tag { font-size: 11px; color: var(--muted); }
+    .tag.knowledge { color: #205080; }
 
-    .hint {
-      font-size: 12px;
-      line-height: 1.45;
-      color: var(--muted);
-    }
+    .hint { font-size: 12px; color: var(--muted); margin: 0; }
 
-    .actions { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
-    .ghost {
-      background: transparent;
-      color: var(--muted);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 10px;
-    }
-    .ghost:hover { color: var(--text); border-color: var(--gold); }
+    .actions { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
+    .ghost:hover { background: #fff6d0; }
 
     .stage {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      position: relative;
       min-width: 0;
-      padding: 12px;
+      padding: 16px;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          #cfc8bb 0 48px,
+          #cac3b6 48px 49px
+        );
     }
 
     .wheel-wrap {
@@ -134,23 +107,18 @@
 
     .pointer {
       position: absolute;
-      top: -8px;
+      top: -6px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 3;
       width: 0;
       height: 0;
-      border-left: 18px solid transparent;
-      border-right: 18px solid transparent;
-      border-top: 36px solid var(--gold);
-      filter: drop-shadow(0 4px 6px rgba(0,0,0,.6));
+      border-left: 16px solid transparent;
+      border-right: 16px solid transparent;
+      border-top: 32px solid var(--red);
     }
 
-    .wheel-rot {
-      width: 100%;
-      height: 100%;
-      transition: none;
-    }
+    .wheel-rot { width: 100%; height: 100%; transition: none; }
     .wheel-rot.spinning {
       transition: transform 4.6s cubic-bezier(0.12, 0.62, 0.08, 1);
     }
@@ -159,60 +127,38 @@
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      box-shadow:
-        0 0 0 10px #0c1322,
-        0 0 0 14px var(--gold-2),
-        0 30px 80px rgba(0,0,0,.55);
+      border: 6px solid #171717;
+      background: #fff;
     }
 
     .hub {
       position: absolute;
-      inset: 38%;
-      background: radial-gradient(circle at 35% 30%, #ffe08a, #b8860b 55%, #6b4c08);
+      inset: 39%;
+      background: #fff;
+      border: 5px solid #171717;
       border-radius: 50%;
-      display: grid;
-      place-items: center;
       z-index: 2;
-      box-shadow: inset 0 2px 8px rgba(255,255,255,.35), 0 8px 20px rgba(0,0,0,.45);
-      color: #1a1203;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      font-size: clamp(11px, 1.6vh, 16px);
-      text-align: center;
-      line-height: 1.15;
       pointer-events: none;
     }
 
     .spin {
-      margin-top: 28px;
-      background: linear-gradient(180deg, #ffe08a, #d4a017);
-      color: #1a1203;
-      border: 0;
-      border-radius: 999px;
-      padding: 14px 42px;
+      margin-top: 22px;
+      padding: 12px 36px;
       font-size: 20px;
-      font-weight: 800;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      box-shadow: 0 10px 24px rgba(212, 160, 23, .35);
     }
-    .spin:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
+    .spin:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    .log { font-size: 13px; display: flex; flex-direction: column; gap: 8px; }
+    .log { font-size: 13px; }
     .log .item {
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--line);
+      padding: 6px 0;
+      border-bottom: 1px solid #cbbfae;
     }
-    .log .n { color: var(--gold); font-size: 11px; }
+    .log .n { color: var(--muted); font-size: 11px; }
 
     .overlay {
       position: fixed;
       inset: 0;
-      background: rgba(4, 8, 16, .72);
+      background: rgba(23, 23, 23, .55);
       display: none;
       place-items: center;
       z-index: 10;
@@ -220,33 +166,28 @@
     }
     .overlay.show { display: grid; }
     .card {
-      background: #10182a;
-      border: 1px solid var(--gold-2);
-      border-radius: 20px;
-      padding: 28px 28px 22px;
-      width: min(920px, 96%);
+      background: #fff;
+      border: 3px solid #171717;
+      padding: 28px 26px 22px;
+      width: min(900px, 96%);
       max-height: 90vh;
       overflow: auto;
       text-align: center;
-      box-shadow: 0 30px 80px rgba(0,0,0,.5);
     }
     .card .kind {
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      font-size: 12px;
-      color: var(--gold);
+      font-size: 13px;
+      color: var(--muted);
       margin: 0 0 8px;
     }
     .card h2 {
       margin: 0 0 14px;
-      font-size: clamp(24px, 4vw, 40px);
-      line-height: 1.1;
+      font-size: clamp(26px, 4vw, 42px);
+      line-height: 1.15;
     }
     .card .question {
       text-align: left;
       font-size: clamp(18px, 2.5vw, 28px);
       line-height: 1.4;
-      color: var(--text);
       margin: 0 0 18px;
     }
     .card .abcd {
@@ -255,23 +196,9 @@
       padding-left: 1.2em;
       font-size: clamp(16px, 2.1vw, 22px);
       line-height: 1.4;
-      color: #ffe08a;
     }
-    .card p.note { color: var(--muted); margin: 0 0 18px; }
-    .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-    .card button {
-      border-radius: 999px;
-      padding: 12px 18px;
-      border: 1px solid var(--line);
-      background: #0c1322;
-      color: var(--text);
-    }
-    .card .primary {
-      background: linear-gradient(180deg, #ffe08a, #d4a017);
-      color: #1a1203;
-      border: 0;
-      font-weight: 700;
-    }
+    .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .card button { padding: 10px 16px; }
 
     @media (max-width: 960px) {
       body { overflow: auto; }
@@ -289,7 +216,7 @@
     <aside>
       <div>
         <h1>Awantura o kasę</h1>
-        <p class="sub">Świat cyfrowy — koło kategorii</p>
+        <p class="sub">Świat cyfrowy</p>
       </div>
       <div class="tabs">
         <button class="tab active" id="tab-etap1" type="button">Etap 1</button>
@@ -299,9 +226,6 @@
         <p class="sub" style="margin-bottom:8px">Na kole</p>
         <ul class="list" id="remaining"></ul>
       </div>
-      <p class="hint">
-        Wiedza znika po wylosowaniu. Phishing gracie bez koła, potem losujecie do końca czasu. Trzy podpowiedzi i skrzynka zostają, aż oznaczysz je jako wylicytowane.
-      </p>
       <div>
         <p class="sub" style="margin-bottom:8px">Wylosowane</p>
         <div class="log" id="log"></div>
@@ -319,7 +243,7 @@
         <div class="wheel-rot" id="rot">
           <canvas id="wheel" width="900" height="900"></canvas>
         </div>
-        <div class="hub">KASA</div>
+        <div class="hub" aria-hidden="true"></div>
       </div>
       <button class="spin" id="spin" type="button">Kręć kołem</button>
     </main>
@@ -490,10 +414,10 @@
       if (!items.length) {
         ctx.beginPath();
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.fillStyle = "#1b2438";
+        ctx.fillStyle = "#efeae0";
         ctx.fill();
-        ctx.fillStyle = "#9aa7c2";
-        ctx.font = "28px Segoe UI";
+        ctx.fillStyle = "#171717";
+        ctx.font = "28px Arial";
         ctx.textAlign = "center";
         ctx.fillText("Brak kategorii", cx, cy - 10);
         return;
@@ -509,7 +433,7 @@
         ctx.closePath();
         ctx.fillStyle = item.color;
         ctx.fill();
-        ctx.strokeStyle = "rgba(255,255,255,.18)";
+        ctx.strokeStyle = "rgba(23,23,23,.35)";
         ctx.lineWidth = 3;
         ctx.stroke();
 
@@ -519,20 +443,18 @@
         ctx.rotate(mid);
         const flip = Math.cos(mid) < 0;
         if (flip) ctx.rotate(Math.PI);
-        ctx.fillStyle = item.type === "special" ? "#fff6d4" : "#fff";
-        ctx.font = `700 ${items.length > 12 ? 18 : items.length > 8 ? 20 : items.length > 5 ? 26 : 30}px Segoe UI`;
+        ctx.fillStyle = item.type === "special" ? "#171717" : "#fff";
+        ctx.font = `700 ${items.length > 12 ? 18 : items.length > 8 ? 20 : items.length > 5 ? 26 : 30}px Arial`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.shadowColor = "rgba(0,0,0,.45)";
-        ctx.shadowBlur = 8;
         ctx.fillText(item.short, flip ? -(r * 0.62) : r * 0.62, 0);
         ctx.restore();
       });
 
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = "#f0c14b";
-      ctx.lineWidth = 10;
+      ctx.strokeStyle = "#171717";
+      ctx.lineWidth = 8;
       ctx.stroke();
     }
 
@@ -555,7 +477,7 @@
             const item = catalog(h.id);
             return `<div class="item"><div class="n">${i + 1}. ${h.stage === "final" ? "Finał" : "Etap 1"}</div>${item ? item.label : h.id}</div>`;
           }).join("")
-        : `<p class="hint">Tu pojawi się kolejność losowań.</p>`;
+        : "";
 
       spinBtn.disabled = spinning || !itemsNow().length;
     }
