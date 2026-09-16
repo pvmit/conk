@@ -6,13 +6,13 @@
   <title>Koło — Awantura o kasę</title>
   <style>
     :root {
-      --bg: #cfc8bb;
-      --panel: #efeae0;
-      --ink: #171717;
-      --muted: #5c584f;
-      --line: #171717;
-      --yellow: #f5c400;
-      --red: #c41e3a;
+      --bg: #121826;
+      --panel: #1a2233;
+      --ink: #eef1f6;
+      --muted: #9aa3b5;
+      --line: #2c364c;
+      --yellow: #e8c200;
+      --red: #e23d4a;
     }
 
     * { box-sizing: border-box; }
@@ -32,7 +32,7 @@
 
     aside {
       background: var(--panel);
-      border-right: 3px solid var(--line);
+      border-right: 1px solid var(--line);
       padding: 16px 14px;
       display: flex;
       flex-direction: column;
@@ -55,14 +55,16 @@
     }
     .tab, button { font: inherit; cursor: pointer; }
     .tab, .ghost, .spin, .card button {
-      border: 2px solid var(--line);
+      border: 1px solid var(--line);
       border-radius: 2px;
-      background: #fff;
+      background: #121826;
       color: var(--ink);
       padding: 8px 10px;
     }
     .tab.active, .card .primary, .spin {
       background: var(--yellow);
+      color: #121826;
+      border-color: var(--yellow);
       font-weight: 800;
     }
 
@@ -72,17 +74,17 @@
       justify-content: space-between;
       gap: 8px;
       padding: 7px 0;
-      border-bottom: 1px solid #cbbfae;
+      border-bottom: 1px solid var(--line);
       font-size: 13px;
     }
-    .list li.gone { color: #8a8378; text-decoration: line-through; }
+    .list li.gone { color: #6b7386; text-decoration: line-through; }
     .tag { font-size: 11px; color: var(--muted); }
-    .tag.knowledge { color: #205080; }
+    .tag.knowledge { color: #8eb6e8; }
 
     .hint { font-size: 12px; color: var(--muted); margin: 0; }
 
     .actions { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
-    .ghost:hover { background: #fff6d0; }
+    .ghost:hover { background: #243049; }
 
     .stage {
       display: flex;
@@ -91,12 +93,7 @@
       justify-content: center;
       min-width: 0;
       padding: 16px;
-      background:
-        repeating-linear-gradient(
-          90deg,
-          #cfc8bb 0 48px,
-          #cac3b6 48px 49px
-        );
+      background: #0e1420;
     }
 
     .wheel-wrap {
@@ -127,15 +124,15 @@
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      border: 6px solid #171717;
-      background: #fff;
+      border: 6px solid #eef1f6;
+      background: #eef1f6;
     }
 
     .hub {
       position: absolute;
       inset: 39%;
-      background: #fff;
-      border: 5px solid #171717;
+      background: #eef1f6;
+      border: 5px solid #121826;
       border-radius: 50%;
       z-index: 2;
       pointer-events: none;
@@ -151,14 +148,14 @@
     .log { font-size: 13px; }
     .log .item {
       padding: 6px 0;
-      border-bottom: 1px solid #cbbfae;
+      border-bottom: 1px solid var(--line);
     }
     .log .n { color: var(--muted); font-size: 11px; }
 
     .overlay {
       position: fixed;
       inset: 0;
-      background: rgba(23, 23, 23, .55);
+      background: rgba(8, 12, 20, .7);
       display: none;
       place-items: center;
       z-index: 10;
@@ -166,8 +163,8 @@
     }
     .overlay.show { display: grid; }
     .card {
-      background: #fff;
-      border: 3px solid #171717;
+      background: #1a2233;
+      border: 1px solid var(--line);
       padding: 28px 26px 22px;
       width: min(900px, 96%);
       max-height: 90vh;
@@ -414,9 +411,9 @@
       if (!items.length) {
         ctx.beginPath();
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.fillStyle = "#efeae0";
+        ctx.fillStyle = "#0e1420";
         ctx.fill();
-        ctx.fillStyle = "#171717";
+        ctx.fillStyle = "#eef1f6";
         ctx.font = "28px Arial";
         ctx.textAlign = "center";
         ctx.fillText("Brak kategorii", cx, cy - 10);
@@ -453,7 +450,7 @@
 
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = "#171717";
+      ctx.strokeStyle = "#eef1f6";
       ctx.lineWidth = 8;
       ctx.stroke();
     }
