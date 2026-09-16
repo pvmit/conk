@@ -307,7 +307,6 @@
         <div class="log" id="log"></div>
       </div>
       <div class="actions">
-        <button class="ghost" id="show-phishing" type="button">Pokaż phishing</button>
         <button class="ghost" id="fullscreen" type="button">Pełny ekran</button>
         <button class="ghost" id="reset-stage" type="button">Reset etapu</button>
         <button class="ghost" id="reset-all" type="button">Reset całej gry</button>
@@ -369,8 +368,6 @@
         ]
       }
     };
-
-    const PHISHING = { id: "phishing", label: "Phishing", short: "PHISHING", type: "knowledge", color: "#c0392b" };
 
     const QUESTIONS = {
       phishing: {
@@ -457,7 +454,6 @@
     let pending = null;
 
     function catalog(id) {
-      if (id === "phishing") return PHISHING;
       return [...STAGES.etap1.items, ...STAGES.final.items].find((x) => x.id === id);
     }
 
@@ -647,8 +643,8 @@
       }
       const ok = document.createElement("button");
       ok.className = "primary";
-      ok.textContent = pending.id === "phishing" ? "Zamknij" : "Dalej";
-      ok.onclick = () => finishDraw(pending.id !== "phishing");
+      ok.textContent = "Dalej";
+      ok.onclick = () => finishDraw(true);
       actions.append(ok);
     }
 
@@ -721,10 +717,6 @@
       renderLists();
     }
 
-    document.getElementById("show-phishing").onclick = () => {
-      if (spinning) return;
-      openResult(PHISHING);
-    };
     document.getElementById("tab-etap1").onclick = () => setStage("etap1");
     document.getElementById("tab-final").onclick = () => setStage("final");
     spinBtn.onclick = spin;
